@@ -39,6 +39,7 @@ trait ToggleFeature
         }
 
         $this->toggleFeature();
+
         return self::SUCCESS;
     }
 
@@ -52,6 +53,7 @@ trait ToggleFeature
 
         if (empty($this->feature)) {
             $this->error('A feature name should be given.');
+
             return self::INVALID;
         }
 
@@ -66,14 +68,15 @@ trait ToggleFeature
             return self::SUCCESS;
         }
 
-        if (!class_exists($subjectClass)) {
+        if (! class_exists($subjectClass)) {
             $this->error("The subject class [$subjectClass] does not exist.");
+
             return self::INVALID;
         }
 
-        if (!is_null($id = $this->option('id'))) {
+        if (! is_null($id = $this->option('id'))) {
             $subject = $subjectClass::find($id);
-        } elseif (!is_null($email = $this->option('email'))) {
+        } elseif (! is_null($email = $this->option('email'))) {
             $subject = $subjectClass::whereEmail($email)->first();
         } else {
             $this->error(
@@ -95,7 +98,7 @@ trait ToggleFeature
             return self::INVALID;
         }
 
-        if (!$subject instanceof Featurable) {
+        if (! $subject instanceof Featurable) {
             $this->error(sprintf(
                 'The model %s(%s) should be an instance of %s.',
                 $subjectClass,
@@ -107,13 +110,15 @@ trait ToggleFeature
         }
 
         $this->subject = $subject;
+
         return self::SUCCESS;
     }
 
     private function toggleFeature(): void
     {
-        if (!$this->confirmToggle()) {
+        if (! $this->confirmToggle()) {
             $this->info('Action canceled');
+
             return;
         }
 
@@ -182,5 +187,5 @@ trait ToggleFeature
      *
      * @return bool
      */
-    protected abstract function toggleValue(): bool;
+    abstract protected function toggleValue(): bool;
 }

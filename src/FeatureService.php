@@ -159,7 +159,7 @@ class FeatureService
     {
         return Collection::make($this->features)
             ->keys()
-            ->filter(fn(string $feature) => $this->isProgrammaticallyEnabled($feature, $featurable));
+            ->filter(fn (string $feature) => $this->isProgrammaticallyEnabled($feature, $featurable));
     }
 
     /**
@@ -207,7 +207,6 @@ class FeatureService
         return $featurable->getFeatures()->contains($feature);
     }
 
-
     /**
      * Check if the given feature is programmatically enabled.
      *
@@ -226,7 +225,7 @@ class FeatureService
 
         $argument = $this->getCallbackArgumentData($rule);
 
-        if (!$argument['optional'] && !($featurable instanceof $argument['class'])) {
+        if (! $argument['optional'] && ! ($featurable instanceof $argument['class'])) {
             return false;
         }
 

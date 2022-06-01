@@ -1,9 +1,6 @@
 <?php
 
-use Sancherie\Feature\Facades\Feature;
 use Sancherie\Feature\Tests\Models\User;
-use Symfony\Component\Console\Command\Command;
-use function Pest\Laravel\artisan;
 
 it('specifically enables a feature with giveFeature()', function () {
     /** @var User $user */

@@ -1,9 +1,9 @@
 <?php
 
+use function Pest\Laravel\artisan;
 use Sancherie\Feature\Database\Factories\UserFactory;
 use Sancherie\Feature\Facades\Feature;
 use Sancherie\Feature\Tests\Models\User;
-use function Pest\Laravel\artisan;
 
 it('globally disables a feature', function () {
     Feature::enable('client-v2');

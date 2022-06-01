@@ -17,8 +17,8 @@ it('declares a programmatic feature with a bool value', function () {
 it('declares a programmatic feature with a callback', function () {
     $service = new FeatureService();
 
-    $service->declare('client-v2', fn() => true);
-    $service->declare('client-v3', fn() => false);
+    $service->declare('client-v2', fn () => true);
+    $service->declare('client-v3', fn () => false);
 
     expect($service->isProgrammaticallyEnabled('client-v2'))->toBe(true)
         ->and($service->isProgrammaticallyEnabled('client-v3'))->toBe(false);
@@ -30,7 +30,7 @@ it('declare an array of features', function () {
     $service->declare([
         'client-v2' => true,
         'client-v3' => false,
-        'client-v4' => fn() => true,
+        'client-v4' => fn () => true,
     ]);
 
     expect($service->isProgrammaticallyEnabled('client-v2'))->toBe(true)
@@ -120,7 +120,7 @@ it('throws an error because there are too many wanted arguments', function () {
 
     $service->declare('client-v2', fn ($user, $user2) => true);
 
-    expect(function() use ($service) {
+    expect(function () use ($service) {
         $service->isProgrammaticallyEnabled('client-v2');
     })->toThrow(Exception::class, 'Feature flag callback can receive a maximum of 1 argument.');
 });
@@ -130,7 +130,7 @@ it('throws an error because the wanted argument is not typed', function () {
 
     $service->declare('client-v2', fn ($user) => true);
 
-    expect(function() use ($service) {
+    expect(function () use ($service) {
         $service->isProgrammaticallyEnabled('client-v2');
     })->toThrow(Exception::class, 'Feature flag callback argument should be typed.');
 });
@@ -140,7 +140,7 @@ it('throws an error because the wanted argument is a builtin', function () {
 
     $service->declare('client-v2', fn (int $user) => true);
 
-    expect(function() use ($service) {
+    expect(function () use ($service) {
         $service->isProgrammaticallyEnabled('client-v2');
     })->toThrow(
         Exception::class,

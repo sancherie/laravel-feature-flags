@@ -4,7 +4,6 @@ namespace Sancherie\Feature\Models;
 
 use Illuminate\Database\Eloquent\Collection as ModelCollection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -12,7 +11,7 @@ use Illuminate\Support\Str;
  * The model representing features.
  *
  * @property string $name
- * @property boolean $enabled
+ * @property bool $enabled
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property \Carbon\Carbon $deleted_at

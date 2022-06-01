@@ -1,5 +1,6 @@
 <?php
 
-use VendorName\Skeleton\Tests\TestCase;
+use Sancherie\Feature\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);
+

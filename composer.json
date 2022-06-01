@@ -1,31 +1,31 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "sancherie/feature",
+    "description": "This is my package feature",
     "keywords": [
-        ":vendor_name",
+        "sancherie",
         "laravel",
-        ":package_slug"
+        "feature"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/sancherie/feature",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": "Clément SANCHEZ",
+            "email": "clement@sanchez.sh",
             "role": "Developer"
         }
     ],
     "require": {
-        "php": "^8.1",
+        "php": "^7.4",
         "spatie/laravel-package-tools": "^1.9.2",
-        "illuminate/contracts": "^9.0"
+        "illuminate/contracts": "^8.0"
     },
     "require-dev": {
-        "nunomaduro/collision": "^6.0",
-        "nunomaduro/larastan": "^2.0.1",
-        "orchestra/testbench": "^7.0",
+        "nunomaduro/collision": "^5.0",
+        "nunomaduro/larastan": "^1.0.3",
+        "orchestra/testbench": "^v6.24.1",
         "pestphp/pest": "^1.21",
-        "pestphp/pest-plugin-laravel": "^1.1",
+        "pestphp/pest-plugin-laravel": "^1.2",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^1.0",
         "phpstan/phpstan-phpunit": "^1.0",
@@ -34,13 +34,13 @@
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories"
+            "Sancherie\\Feature\\": "src",
+            "Sancherie\\Feature\\Database\\Factories\\": "database/factories"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests"
+            "Sancherie\\Feature\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -54,10 +54,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "Sancherie\\Feature\\FeatureServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "Feature": "Features"
             }
         }
     },

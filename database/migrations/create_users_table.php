@@ -8,12 +8,18 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('migration_table_name_table', function (Blueprint $table) {
-            $table->id();
+        Schema::create('users', function (Blueprint $table) {
+            $table->uuid('id')->primary();
 
-            // add fields
+            $table->string('email', 64);
 
             $table->timestamps();
+            $table->softDeletes();
         });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('users');
     }
 };

@@ -14,8 +14,7 @@ class FeatureServiceProvider extends PackageServiceProvider
         $this->app->instance(FeatureService::class, new FeatureService());
 
         $package
-            ->name('feature')
-            ->hasConfigFile()
+            ->name('laravel-feature-flags')
             ->hasCommand(EnableFeature::class)
             ->hasCommand(DisableFeature::class)
             ->hasMigration('create_features_table')

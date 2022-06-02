@@ -276,7 +276,7 @@ class FeatureService
 
         return [
             'name' => $parameter->getName(),
-            'class' => $type->getName(),
+            'class' => $type instanceof \ReflectionNamedType ? $type->getName() : null,
             'optional' => $type->allowsNull(),
         ];
     }

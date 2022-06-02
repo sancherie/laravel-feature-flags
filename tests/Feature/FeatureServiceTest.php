@@ -72,6 +72,12 @@ it('returns the enabled features for a subject', function () {
 });
 
 it('returns no specifically enabled features if no subject given', function () {
+    $service = new FeatureService();
+
+    expect($service->getSpecificallyEnabledFeatures())->toBeEmpty();
+});
+
+it('returns only one feature instance when its given multiple times', function () {
     /** @var \Sancherie\Feature\Tests\Models\User $user */
     $user = User::factory()->create();
     $service = new FeatureService();
@@ -79,13 +85,6 @@ it('returns no specifically enabled features if no subject given', function () {
     $service->enable('client-v2', $user);
 
     expect($service->getEnabledFeatures($user)->all())->toBe(['client-v2']);
-});
-
-it('returns only one feature instance when its given multiple times', function () {
-    $service = new FeatureService();
-    $service->enable();
-
-    expect($service->getSpecificallyEnabledFeatures())->toBeEmpty();
 });
 
 it('enables the given feature because no subject is taken', function () {

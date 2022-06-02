@@ -24,6 +24,13 @@ class FeatureService
     private array $features = [];
 
     /**
+     * The cache array of declared features in database.
+     *
+     * @var Collection<string>|null
+     */
+    private ?Collection $databaseFeaturesCache = null;
+
+    /**
      * Register new programmatic feature(s) and its(their) rule to be enabled.
      *
      * @param string|array $feature
@@ -121,7 +128,8 @@ class FeatureService
     {
         return $this->getGloballyEnabledFeatures()
             ->merge($this->getSpecificallyEnabledFeatures($featurable))
-            ->merge($this->getProgrammaticallyEnabledFeatures($featurable));
+            ->merge($this->getProgrammaticallyEnabledFeatures($featurable))
+            ->unique();
     }
 
     /**
@@ -131,7 +139,14 @@ class FeatureService
      */
     public function getGloballyEnabledFeatures(): Collection
     {
-        return Feature::query()->where('enabled', true)->pluck('name');
+        if (is_null($this->databaseFeaturesCache)) {
+            $this->databaseFeaturesCache = Feature::query()
+                ->where('enabled', true)
+                ->pluck('name')
+                ->unique();
+        }
+
+        return $this->databaseFeaturesCache;
     }
 
     /**
@@ -159,7 +174,7 @@ class FeatureService
     {
         return Collection::make($this->features)
             ->keys()
-            ->filter(fn (string $feature) => $this->isProgrammaticallyEnabled($feature, $featurable));
+            ->filter(fn(string $feature) => $this->isProgrammaticallyEnabled($feature, $featurable));
     }
 
     /**
@@ -185,10 +200,7 @@ class FeatureService
      */
     public function isGloballyEnabled(string $feature): bool
     {
-        /** @var Feature $feature */
-        $feature = Feature::query()->where('name', $feature)->first();
-
-        return is_null($feature) ? false : $feature->enabled;
+        return $this->getGloballyEnabledFeatures()->contains($feature);
     }
 
     /**
@@ -225,7 +237,7 @@ class FeatureService
 
         $argument = $this->getCallbackArgumentData($rule);
 
-        if (! $argument['optional'] && ! ($featurable instanceof $argument['class'])) {
+        if (!$argument['optional'] && !($featurable instanceof $argument['class'])) {
             return false;
         }
 
@@ -267,5 +279,10 @@ class FeatureService
             'class' => $type->getName(),
             'optional' => $type->allowsNull(),
         ];
+    }
+
+    public function forgetCache(): void
+    {
+        $this->databaseFeaturesCache = null;
     }
 }

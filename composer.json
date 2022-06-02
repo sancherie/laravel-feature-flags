@@ -1,5 +1,5 @@
 {
-    "name": "sancherie/feature",
+    "name": "sancherie/laravel-feature-flags",
     "description": "This is my package feature",
     "keywords": [
         "sancherie",

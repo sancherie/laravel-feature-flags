@@ -86,7 +86,7 @@ trait ToggleFeature
             return self::INVALID;
         }
 
-        $this->subjectIdentifier = $id ?? $uuid ?? $email ?? null;
+        $this->subjectIdentifier = $id ?? $email ?? null;
 
         if (is_null($subject)) {
             $this->error(sprintf(
@@ -102,7 +102,7 @@ trait ToggleFeature
             $this->error(sprintf(
                 'The model %s(%s) should be an instance of %s.',
                 $subjectClass,
-                $id ?? $uuid ?? $email ?? null,
+                $this->subjectIdentifier,
                 Featurable::class
             ));
 

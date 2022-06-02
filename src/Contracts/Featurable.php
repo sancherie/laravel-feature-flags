@@ -12,7 +12,7 @@ interface Featurable
     /**
      * Assign a specific feature to the featurable model.
      *
-     * @param ...$features
+     * @param array $features
      * @return void
      */
     public function giveFeature(...$features): void;
@@ -20,7 +20,7 @@ interface Featurable
     /**
      * Revoke a specific feature from the featurable model.
      *
-     * @param ...$features
+     * @param array $features
      * @return void
      */
     public function revokeFeature(...$features): void;
@@ -28,7 +28,7 @@ interface Featurable
     /**
      * Return the specific features of the featurable subject.
      *
-     * @return mixed
+     * @return Collection<string>
      */
     public function getFeatures(): Collection;
 

@@ -34,7 +34,7 @@ class FeatureService
      * Register new programmatic feature(s) and its(their) rule to be enabled.
      *
      * @param string|array $feature
-     * @param null $enabled
+     * @param bool|callable|null $enabled
      * @return void
      * @throws \Exception
      */
@@ -104,7 +104,7 @@ class FeatureService
      * otherwise it returns the list of enabled features. A featurable object can be given.
      *
      * @param string|Featurable|null $feature
-     * @return bool|\Illuminate\Database\Eloquent\Collection<>
+     * @return bool|\Illuminate\Database\Eloquent\Collection<string>
      * @throws \ReflectionException
      */
     public function enabled($feature = null, ?Featurable $featurable = null)
@@ -196,7 +196,7 @@ class FeatureService
      * Check if the given feature is globally enabled in database.
      *
      * @param string $feature
-     * @return bool|null
+     * @return bool
      */
     public function isGloballyEnabled(string $feature): bool
     {
@@ -208,7 +208,7 @@ class FeatureService
      *
      * @param string $feature
      * @param \Sancherie\Feature\Contracts\Featurable|null $featurable
-     * @return bool|null
+     * @return bool
      */
     public function isSpecificallyEnabled(string $feature, ?Featurable $featurable): bool
     {
@@ -224,7 +224,7 @@ class FeatureService
      *
      * @param string $feature
      * @param \Sancherie\Feature\Contracts\Featurable|null $featurable
-     * @return bool|null
+     * @return bool
      * @throws \ReflectionException
      */
     public function isProgrammaticallyEnabled(string $feature, ?Featurable $featurable = null): bool
@@ -248,11 +248,11 @@ class FeatureService
      * Return data about the first callback argument
      *
      * @param \Closure $callback
-     * @return array|null
+     * @return array
      * @throws \ReflectionException
      * @throws \Exception
      */
-    private function getCallbackArgumentData(\Closure $callback): ?array
+    private function getCallbackArgumentData(\Closure $callback): array
     {
         $parameters = (new ReflectionFunction($callback))->getParameters();
 

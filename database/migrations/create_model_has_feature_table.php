@@ -18,7 +18,7 @@ return new class extends Migration
                 'feature_id',
                 'featurable_type',
                 'featurable_id',
-            ]);
+            ], 'unique_index');
         });
     }
 

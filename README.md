@@ -16,7 +16,7 @@ composer require sancherie/laravel-feature-flags
 You can publish and run the migrations with:
 
 ```bash
-php artisan vendor:publish --tag="feature-migrations"
+php artisan vendor:publish --tag="feature-flags-migrations"
 php artisan migrate
 ```
 

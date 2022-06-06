@@ -23,6 +23,7 @@ use Sancherie\Feature\FeatureService;
  * @method static bool isSpecificallyEnabled(string $feature, ?Featurable $featurable)
  * @method static bool isProgrammaticallyEnabled(string $feature, ?Featurable $featurable)
  * @method static void forgetCache()
+ * @mixin \Illuminate\Support\Traits\Macroable
  */
 class Feature extends Facade
 {

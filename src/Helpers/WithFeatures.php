@@ -3,7 +3,6 @@
 namespace Sancherie\Feature\Helpers;
 
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Sancherie\Feature\Models\Feature;
 

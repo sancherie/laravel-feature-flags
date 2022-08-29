@@ -1,6 +1,7 @@
 <?php
 
 use function Pest\Laravel\artisan;
+
 use Sancherie\Feature\Contracts\Featurable;
 use Sancherie\Feature\Database\Factories\UserFactory;
 use Sancherie\Feature\Facades\Feature;

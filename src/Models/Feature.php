@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
  *
  * @property string $name
  * @property bool $enabled
+ * @property bool $direct_enabled
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property \Carbon\Carbon $deleted_at
@@ -20,13 +21,6 @@ use Illuminate\Support\Str;
  */
 class Feature extends Model
 {
-    /**
-     * @inheritdoc
-     */
-    protected $attributes = [
-        'enabled' => false,
-    ];
-
     /**
      * @inheritdoc
      */

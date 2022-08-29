@@ -8,15 +8,15 @@ use Sancherie\Feature\Tests\Models\User;
 it('globally disables a feature', function () {
     Feature::enable('client-v2');
 
-    $command = artisan('feature:disable', [
+    $command = artisan('feature:revoke', [
         '--force' => true,
         '--feature' => 'client-v2',
     ]);
 
     $command->assertSuccessful();
-    $command->expectsOutput('The feature [client-v2] has been successfully disabled globally !');
+    $command->expectsOutput('The feature [client-v2] has been successfully revoked globally !');
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeFalse();
+    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull();
 });
 
 it('specifically disables a feature', function () {
@@ -24,7 +24,7 @@ it('specifically disables a feature', function () {
     Feature::enable('client-v2');
     Feature::enable('client-v2', $user);
 
-    $command = artisan('feature:disable', [
+    $command = artisan('feature:revoke', [
         '--force' => true,
         '--feature' => 'client-v2',
         '--model' => User::class,
@@ -33,11 +33,11 @@ it('specifically disables a feature', function () {
 
     $command->assertSuccessful();
     $command->expectsOutput(sprintf(
-        'The feature [client-v2] has been successfully disabled for %s(%s) !',
+        'The feature [client-v2] has been successfully revoked for %s(%s) !',
         User::class,
         $user->getKey(),
     ));
     $command->run();
     expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeTrue()
-        ->and(Feature::getSpecificFeatureStatus('client-v2', $user))->toBeFalse();
+        ->and(Feature::getSpecificFeatureStatus('client-v2', $user))->toBeNull();
 });

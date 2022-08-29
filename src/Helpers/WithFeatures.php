@@ -3,6 +3,7 @@
 namespace Sancherie\Feature\Helpers;
 
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Sancherie\Feature\Models\Feature;
 
@@ -29,7 +30,7 @@ trait WithFeatures
             'feature_id',
             $this->incrementing ? 'uuid' : null,
             'id'
-        );
+        )->withPivot(['enabled as direct_enabled']);
     }
 
     /**
@@ -40,9 +41,15 @@ trait WithFeatures
      */
     public function giveFeature(...$features): void
     {
-        $this->directFeatures()->syncWithoutDetaching(
-            Feature::resolveMany($features)
-        );
+        $directFeatures = $this->directFeatures
+            ->mapWithKeys(fn (Feature $feature) => [$feature->getKey() => ['enabled' => $feature->direct_enabled]])
+            ->replace(
+                Feature::resolveMany($features)
+                    ->mapWithKeys(fn (Feature $feature) => [$feature->getKey() => ['enabled' => true]])
+            )->all();
+
+        $this->directFeatures()->sync($directFeatures);
+        $this->unsetRelation('directFeatures');
     }
 
     /**
@@ -59,12 +66,31 @@ trait WithFeatures
     }
 
     /**
+     * Disable a specific feature for the featurable model.
+     *
+     * @param ...$features
+     * @return void
+     */
+    public function disableFeature(...$features): void
+    {
+        $directFeatures = $this->directFeatures
+            ->mapWithKeys(fn (Feature $feature) => [$feature->getKey() => ['enabled' => $feature->direct_enabled]])
+            ->replace(
+                Feature::resolveMany($features)
+                    ->mapWithKeys(fn (Feature $feature) => [$feature->getKey() => ['enabled' => false]])
+            )->all();
+
+        $this->directFeatures()->sync($directFeatures);
+        $this->unsetRelation('directFeatures');
+    }
+
+    /**
      * Return the specific features of the featurable subject.
      *
      * @return Collection
      */
     public function getFeatures(): Collection
     {
-        return $this->directFeatures->pluck('name');
+        return $this->directFeatures->pluck('direct_enabled', 'name');
     }
 }

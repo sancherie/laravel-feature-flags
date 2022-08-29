@@ -84,7 +84,23 @@ class FeatureService
     }
 
     /**
-     * Disable the given feature. If a featurable is given, the feature is revoked for the subject.
+     * Revoke the given feature. If a featurable is given, the feature is revoked for the subject.
+     *
+     * @param string $feature
+     * @param \Sancherie\Feature\Contracts\Featurable|null $for
+     * @return void
+     */
+    public function revoke(string $feature, ?Featurable $for = null): void
+    {
+        if (is_null($for)) {
+            Feature::query()->updateOrCreate(['name' => $feature], ['enabled' => null]);
+        } else {
+            $for->revokeFeature($feature);
+        }
+    }
+
+    /**
+     * Disable the given feature. If a featurable is given, the feature is disabled for the subject.
      *
      * @param string $feature
      * @param \Sancherie\Feature\Contracts\Featurable|null $for
@@ -95,7 +111,7 @@ class FeatureService
         if (is_null($for)) {
             Feature::query()->updateOrCreate(['name' => $feature], ['enabled' => false]);
         } else {
-            $for->revokeFeature($feature);
+            $for->disableFeature($feature);
         }
     }
 
@@ -133,20 +149,27 @@ class FeatureService
     }
 
     /**
+     * Return all the features that are declared in database.
+     *
+     * @return Collection<string>
+     */
+    public function getGlobalFeatures(): Collection
+    {
+        if (is_null($this->databaseFeaturesCache)) {
+            $this->databaseFeaturesCache = Feature::query()->pluck('enabled', 'name');
+        }
+
+        return $this->databaseFeaturesCache;
+    }
+
+    /**
      * Return all the features that are globally enabled in database.
      *
      * @return Collection<string>
      */
     public function getGloballyEnabledFeatures(): Collection
     {
-        if (is_null($this->databaseFeaturesCache)) {
-            $this->databaseFeaturesCache = Feature::query()
-                ->where('enabled', true)
-                ->pluck('name')
-                ->unique();
-        }
-
-        return $this->databaseFeaturesCache;
+        return $this->getGlobalFeatures()->filter(fn ($v) => boolval($v))->keys();
     }
 
     /**
@@ -161,7 +184,7 @@ class FeatureService
             return Collection::empty();
         }
 
-        return $featurable->getFeatures();
+        return $featurable->getFeatures()->filter(fn ($v) => boolval($v))->keys();
     }
 
     /**
@@ -187,20 +210,28 @@ class FeatureService
      */
     public function isEnabled(string $feature, ?Featurable $featurable = null): bool
     {
-        return $this->isGloballyEnabled($feature)
-            || $this->isSpecificallyEnabled($feature, $featurable)
-            || $this->isProgrammaticallyEnabled($feature, $featurable);
+        return $this->getGlobalFeatureStatus($feature)
+            ?? $this->getSpecificFeatureStatus($feature, $featurable)
+            ?? $this->isProgrammaticallyEnabled($feature, $featurable);
     }
 
     /**
      * Check if the given feature is globally enabled in database.
      *
      * @param string $feature
-     * @return bool
+     * @return bool|null
      */
-    public function isGloballyEnabled(string $feature): bool
+    public function getGlobalFeatureStatus(string $feature): ?bool
     {
-        return $this->getGloballyEnabledFeatures()->contains($feature);
+        $globalFeatures = $this->getGlobalFeatures();
+
+        if ($globalFeatures->has($feature)) {
+            $result = $globalFeatures[$feature];
+        } else {
+            $result = null;
+        }
+
+        return $result;
     }
 
     /**
@@ -208,15 +239,23 @@ class FeatureService
      *
      * @param string $feature
      * @param \Sancherie\Feature\Contracts\Featurable|null $featurable
-     * @return bool
+     * @return bool|null
      */
-    public function isSpecificallyEnabled(string $feature, ?Featurable $featurable): bool
+    public function getSpecificFeatureStatus(string $feature, ?Featurable $featurable): ?bool
     {
         if (is_null($featurable)) {
-            return false;
+            return null;
         }
 
-        return $featurable->getFeatures()->contains($feature);
+        $features = $featurable->getFeatures();
+
+        if ($features->has($feature)) {
+            $result = $features[$feature];
+        } else {
+            $result = null;
+        }
+
+        return $result;
     }
 
     /**

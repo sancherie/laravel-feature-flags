@@ -26,6 +26,14 @@ interface Featurable
     public function revokeFeature(...$features): void;
 
     /**
+     * Disable a specific feature for the featurable model.
+     *
+     * @param array $features
+     * @return void
+     */
+    public function disableFeature(...$features): void;
+
+    /**
      * Return the specific features of the featurable subject.
      *
      * @return Collection<string>

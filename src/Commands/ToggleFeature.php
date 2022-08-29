@@ -122,10 +122,13 @@ trait ToggleFeature
             return;
         }
 
-        if ($this->toggleValue()) {
+        $toggleValue = $this->toggleValue();
+        if ($toggleValue) {
             Feature::enable($this->feature, $this->subject);
-        } else {
+        } elseif ($toggleValue === false) {
             Feature::disable($this->feature, $this->subject);
+        } else {
+            Feature::revoke($this->feature, $this->subject);
         }
 
         $this->writeSuccess();
@@ -179,13 +182,21 @@ trait ToggleFeature
 
     private function toggleString(): string
     {
-        return $this->toggleValue() ? 'enable' : 'disable';
+        $toggleValue = $this->toggleValue();
+
+        if ($toggleValue === null) {
+            return 'revoke';
+        } elseif ($toggleValue) {
+            return 'enable';
+        } else {
+            return 'disable';
+        }
     }
 
     /**
      * The value to be given for the toggle.
      *
-     * @return bool
+     * @return bool|null
      */
-    abstract protected function toggleValue(): bool;
+    abstract protected function toggleValue(): ?bool;
 }

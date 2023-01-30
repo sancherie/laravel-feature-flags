@@ -4,6 +4,8 @@ namespace Sancherie\Feature\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Concerns\AsPivot;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Sancherie\Feature\Contracts\Featurable;
 
 /**
  * The model representing pivot between featurable and features.
@@ -13,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\Concerns\AsPivot;
  * @property string $featurable_type
  * @property string $featurable_id
  * @property string $enabled
+ *
+ * @property Featurable $featurable
  */
 class ModelHasFeature extends Model
 {
@@ -34,4 +38,14 @@ class ModelHasFeature extends Model
     protected $casts = [
         'enabled' => 'boolean',
     ];
+
+    /**
+     * The relation to the featurable.
+     *
+     * @return MorphTo
+     */
+    public function featurable(): MorphTo
+    {
+        return $this->morphTo();
+    }
 }

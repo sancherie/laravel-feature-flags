@@ -12,8 +12,6 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class FeatureServiceProvider extends PackageServiceProvider
 {
-
-
     public function configurePackage(Package $package): void
     {
         $this->app->instance(FeaturesRepository::class, new FeaturesRepository());

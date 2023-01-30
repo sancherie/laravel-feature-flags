@@ -36,3 +36,20 @@ it('returns only one feature instance when its given multiple times', function (
 
     expect($service->getEnabledFeatures($user)->all())->toBe(['client-v2']);
 });
+
+it('should declare feature with a callback and return true', function () {
+    $service = app(FeatureService::class);
+
+    $service->declare('client-v2', fn () => true);
+
+    expect($service->enabled('client-v2'))->toBeTrue();
+});
+
+
+it('should declare feature with a callback and return false', function () {
+    $service = app(FeatureService::class);
+
+    $service->declare('client-v2', fn () => false);
+
+    expect($service->enabled('client-v2'))->toBeFalse();
+});

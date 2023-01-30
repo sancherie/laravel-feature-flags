@@ -55,7 +55,7 @@ class FeatureService
      */
     public function declare($feature, $enabled = null): void
     {
-        $this->featuresRepository->declare(func_get_args());
+        $this->featuresRepository->declare(...func_get_args());
     }
 
     /**

@@ -1,5 +1,6 @@
 <?php
 
+use Sancherie\Feature\Repositories\FeaturesRepository;
 use function Pest\Laravel\artisan;
 
 use Sancherie\Feature\Database\Factories\UserFactory;
@@ -17,7 +18,7 @@ it('globally disables a feature', function () {
     $command->assertSuccessful();
     $command->expectsOutput('The feature [client-v2] has been successfully revoked globally !');
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull();
 });
 
 it('specifically disables a feature', function () {
@@ -39,6 +40,6 @@ it('specifically disables a feature', function () {
         $user->getKey(),
     ));
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeTrue()
-        ->and(Feature::getSpecificFeatureStatus('client-v2', $user))->toBeNull();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeTrue()
+        ->and(app(FeaturesRepository::class)->getSpecificFeatureStatus('client-v2', $user))->toBeNull();
 });

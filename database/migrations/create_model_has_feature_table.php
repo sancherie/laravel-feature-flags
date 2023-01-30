@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignUuid('feature_id')->constrained('features');
             $table->uuidMorphs('featurable');
             $table->boolean('enabled')->nullable();
+            $table->timestamp('claimed_at')->nullable();
 
             $table->unique([
                 'feature_id',

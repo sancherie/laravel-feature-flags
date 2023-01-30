@@ -16,14 +16,7 @@ use Sancherie\Feature\FeatureService;
  * @method static void disable(string $feature, ?Featurable $for = null)
  * @method static bool|Collection enabled($feature = null, ?Featurable $featurable = null)
  * @method static Collection getEnabledFeatures(?Featurable $featurable = null)
- * @method static Collection getGloballyEnabledFeatures()
- * @method static Collection getSpecificallyEnabledFeatures(?Featurable $featurable = null)
- * @method static Collection getProgrammaticallyEnabledFeatures(?Featurable $featurable = null)
  * @method static bool isEnabled(string $feature, ?Featurable $featurable = null)
- * @method static bool|null getGlobalFeatureStatus(string $feature)
- * @method static bool|null getSpecificFeatureStatus(string $feature, ?Featurable $featurable)
- * @method static bool isProgrammaticallyEnabled(string $feature, ?Featurable $featurable)
- * @method static void forgetCache()
  * @mixin \Illuminate\Support\Traits\Macroable
  */
 class Feature extends Facade

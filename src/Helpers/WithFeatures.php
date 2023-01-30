@@ -52,6 +52,28 @@ trait WithFeatures
     }
 
     /**
+     * Assign a specific feature to the featurable model using claim.
+     *
+     * @param ...$features
+     * @return void
+     */
+    public function claimFeature(...$features): void
+    {
+        $directFeatures = $this->directFeatures
+            ->mapWithKeys(fn (Feature $feature) => [$feature->getKey() => ['enabled' => $feature->direct_enabled]])
+            ->replace(
+                Feature::resolveMany($features)
+                    ->mapWithKeys(fn (Feature $feature) => [$feature->getKey() => [
+                        'enabled' => true,
+                        'claimed_at' => now(),
+                    ]])
+            )->all();
+
+        $this->directFeatures()->sync($directFeatures);
+        $this->unsetRelation('directFeatures');
+    }
+
+    /**
      * Revoke a specific feature from the featurable model.
      *
      * @param ...$features

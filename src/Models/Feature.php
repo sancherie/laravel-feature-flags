@@ -2,8 +2,10 @@
 
 namespace Sancherie\Feature\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection as ModelCollection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -13,11 +15,16 @@ use Illuminate\Support\Str;
  * @property string $name
  * @property bool $enabled
  * @property bool $direct_enabled
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property \Carbon\Carbon $deleted_at
+ * @property int $max_claims
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon $deleted_at
  *
- * @property-read \Illuminate\Database\Eloquent\Collection $users
+ * @property-read int $claimed_pivots_count
+ *
+ * @property-read ModelCollection $users
+ * @property-read ModelCollection<ModelHasFeature> $pivots
+ * @property-read ModelCollection<ModelHasFeature> $claimedPivots
  */
 class Feature extends Model
 {
@@ -32,6 +39,7 @@ class Feature extends Model
     protected $fillable = [
         'name',
         'enabled',
+        'max_claims',
     ];
 
     /**
@@ -78,5 +86,25 @@ class Feature extends Model
                 $feature->{$feature->getKeyName()} = (string) Str::uuid();
             }
         });
+    }
+
+    /**
+     * The relation to the pivots.
+     *
+     * @return HasMany
+     */
+    public function pivots(): HasMany
+    {
+        return $this->hasMany(ModelHasFeature::class);
+    }
+
+    /**
+     * The relation to the pivots that have been claimed.
+     *
+     * @return HasMany
+     */
+    public function claimedPivots(): HasMany
+    {
+        return $this->pivots()->whereNotNull('claimed_at');
     }
 }

@@ -2,10 +2,13 @@
 
 namespace Sancherie\Feature\Facades;
 
+use http\Encoding\Stream;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Traits\Macroable;
 use Sancherie\Feature\Contracts\Featurable;
 use Sancherie\Feature\FeatureService;
+use Sancherie\Feature\Models\Feature as FeatureModel;
 
 /**
  * A facade for the feature service.
@@ -17,7 +20,10 @@ use Sancherie\Feature\FeatureService;
  * @method static bool|Collection enabled($feature = null, ?Featurable $featurable = null)
  * @method static Collection getEnabledFeatures(?Featurable $featurable = null)
  * @method static bool isEnabled(string $feature, ?Featurable $featurable = null)
- * @mixin \Illuminate\Support\Traits\Macroable
+ * @method static bool claimable(Featurable|FeatureModel|string|null $feature, Featurable|null $featurable = null)
+ * @method static bool isClaimable(FeatureModel|string $feature, Featurable|null $featurable = null)
+ * @method static Collection getClaimableFeatures(Featurable|null $featurable = null)
+ * @mixin Macroable
  */
 class Feature extends Facade
 {

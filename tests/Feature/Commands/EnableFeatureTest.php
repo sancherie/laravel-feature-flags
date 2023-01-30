@@ -1,11 +1,11 @@
 <?php
 
-use Sancherie\Feature\Repositories\FeaturesRepository;
 use function Pest\Laravel\artisan;
 
 use Sancherie\Feature\Contracts\Featurable;
+
 use Sancherie\Feature\Database\Factories\UserFactory;
-use Sancherie\Feature\Facades\Feature;
+use Sancherie\Feature\Repositories\FeaturesRepository;
 use Sancherie\Feature\Tests\Models\NotFeaturableUser;
 use Sancherie\Feature\Tests\Models\User;
 use Symfony\Component\Console\Command\Command;

@@ -2,7 +2,6 @@
 
 namespace Sancherie\Feature\Facades;
 
-use http\Encoding\Stream;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Traits\Macroable;

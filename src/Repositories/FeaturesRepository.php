@@ -5,7 +5,6 @@ namespace Sancherie\Feature\Repositories;
 use Closure;
 use Exception;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Traits\Macroable;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionNamedType;

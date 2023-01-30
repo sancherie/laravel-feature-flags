@@ -2,11 +2,8 @@
 
 namespace Sancherie\Feature\Models;
 
-use Illuminate\Database\Eloquent\Collection as ModelCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Concerns\AsPivot;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 /**
  * The model representing pivot between featurable and features.

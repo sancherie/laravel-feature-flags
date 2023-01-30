@@ -111,7 +111,7 @@ it('should return false because feature is globally enabled', function () {
     $feature = Feature::query()->create([
         'name' => 'client-v2',
         'max_claims' => 1,
-        'enabled' => true
+        'enabled' => true,
     ]);
 
     expect($service->isClaimable($feature))->toBeFalse();

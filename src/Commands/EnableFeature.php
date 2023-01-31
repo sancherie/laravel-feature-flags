@@ -27,7 +27,7 @@ class EnableFeature extends Command
     /**
      * @inheritDoc
      */
-    protected function toggleValue(): bool
+    protected function toggleValue(): ?bool
     {
         return true;
     }

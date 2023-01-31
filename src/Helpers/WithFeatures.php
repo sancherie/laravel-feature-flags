@@ -2,16 +2,19 @@
 
 namespace Sancherie\Feature\Helpers;
 
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Sancherie\Feature\Models\Feature;
+use Sancherie\Feature\Models\ModelHasFeature;
 
 /**
  * Helper trait to easily implement Sancherie\Contracts\Featurable on Eloquent models.
  *
  * @mixin \Illuminate\Database\Eloquent\Model
  * @property-read \Illuminate\Database\Eloquent\Collection<Feature> $directFeatures
+ * @property-read \Illuminate\Database\Eloquent\Collection<ModelHasFeature> $featureClaims
  */
 trait WithFeatures
 {
@@ -34,21 +37,20 @@ trait WithFeatures
     }
 
     /**
-     * Relation to the direct features.
+     * Relation to the feature claims.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
      */
-    public function claimedFeatures(): MorphToMany
+    public function featureClaims(): MorphMany
     {
-        return $this->morphToMany(
-            Feature::class,
+        return $this->morphMany(
+            ModelHasFeature::class,
             'featurable',
-            'model_has_feature',
+            'featurable_type',
             'featurable_id',
-            'feature_id',
             $this->incrementing ? 'uuid' : null,
             'id'
-        )->withPivot(['enabled as direct_enabled']);
+        );
     }
 
     /**

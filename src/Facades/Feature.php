@@ -22,7 +22,6 @@ use Sancherie\Feature\Models\Feature as FeatureModel;
  * @method static bool claimable(Featurable|FeatureModel|string|null $feature, Featurable|null $featurable = null)
  * @method static bool isClaimable(FeatureModel|string $feature, Featurable|null $featurable = null)
  * @method static Collection getClaimableFeatures(Featurable|null $featurable = null)
- * @mixin Macroable
  */
 class Feature extends Facade
 {

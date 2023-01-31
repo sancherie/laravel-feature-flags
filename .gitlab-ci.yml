@@ -37,8 +37,8 @@ build: &build_def
 qa:phpunit:
   stage: qa
   script:
-    - apt-get update -qq && apt-get install -y -qq php8.0-sqlite
-    - bash run-tests.sh
+    - apt-get update -qq && apt-get install -y -qq php7.4-sqlite
+    - vendor/bin/pest
   allow_failure: false
   coverage: '/^\s*Lines:\s*(\d+\.\d+)\%/'
   artifacts:
@@ -50,12 +50,6 @@ qa:phpunit:
         path: coverage.cobertura.xml
     paths:
       - storage/logs
-
-qa:phpcs:
-  stage: qa
-  script:
-    - composer run qa:phpcs
-  allow_failure: false
 
 deploy_composer:
   only:

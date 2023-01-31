@@ -10,8 +10,6 @@ use ReflectionFunction;
 use ReflectionNamedType;
 use Sancherie\Feature\Contracts\Featurable;
 use Sancherie\Feature\Models\Feature;
-use Sancherie\Feature\Models\FeatureClaim;
-use function _PHPStan_4dd92cd93\RingCentral\Psr7\str;
 
 /**
  * The repository charged of managing feature flags.
@@ -162,7 +160,7 @@ class FeaturesRepository
         if (is_null($this->databaseFeaturesCache)) {
             $this->databaseFeaturesCache = Feature::query()
                 ->pluck('enabled', 'name')
-                ->filter(fn (?bool $enabled) => !is_null($enabled));
+                ->filter(fn (?bool $enabled) => ! is_null($enabled));
         }
 
         return $this->databaseFeaturesCache;
@@ -194,7 +192,7 @@ class FeaturesRepository
             ->getFeatureClaims()
             ->loadMissing('feature')
             ->pluck('enabled', 'feature.name')
-            ->filter(fn (?bool $enabled) => !is_null($enabled));
+            ->filter(fn (?bool $enabled) => ! is_null($enabled));
     }
 
     /**

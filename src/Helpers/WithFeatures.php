@@ -53,6 +53,7 @@ trait WithFeatures
 
         /** @var FeatureClaim $claim */
         $claim = $this->featureClaims()->create($attributes);
+
         return $claim;
     }
 

@@ -4,7 +4,6 @@ namespace Sancherie\Feature\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\Concerns\AsPivot;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -39,7 +38,7 @@ class FeatureClaim extends Model
         'featurable_type',
         'featurable_id',
         'enabled',
-        'claimed_at'
+        'claimed_at',
     ];
 
     /**

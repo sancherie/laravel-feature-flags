@@ -1,4 +1,4 @@
-image: registry.gitlab.plussimple.ovh/image/ci-env:debian-utf8-nodev12-php80
+image: registry.gitlab.plussimple.ovh/image/ci-env:debian-utf8-nodev12-php74
 
 variables:
   GIT_SUBMODULE_STRATEGY: normal

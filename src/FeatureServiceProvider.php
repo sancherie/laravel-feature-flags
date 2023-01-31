@@ -35,7 +35,7 @@ class FeatureServiceProvider extends PackageServiceProvider
                 $filePath => $this->generateMigrationName(
                     'alter_features_table_add_max_claims',
                     now()->addSecond()
-                ), ], "{$this->package->shortName()}-1.1.0-migrations");
+                ), ], "{$this->package->shortName()}-2.0.0-migrations");
         }
     }
 }

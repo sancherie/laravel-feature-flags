@@ -44,9 +44,11 @@ return new class extends Migration
         });
 
         Schema::table('model_has_feature', function (Blueprint $table) {
-            $table->dropIndex(['uuid']);
+            $table->dropUnique(['uuid']);
             $table->dropColumn('uuid');
             $table->dropColumn('claimed_at');
+            $table->dropColumn('created_at');
+            $table->dropColumn('updated_at');
         });
     }
 };

@@ -31,10 +31,6 @@ class FeatureServiceProvider extends PackageServiceProvider
             $filePath = $this->package->basePath(
                 "/../database/migrations/alter_features_table_add_max_claims.php"
             );
-            if (! file_exists($filePath)) {
-                // Support for the .stub file extension
-                $filePath .= '.stub';
-            }
 
             $this->publishes([
                 $filePath => $this->generateMigrationName(

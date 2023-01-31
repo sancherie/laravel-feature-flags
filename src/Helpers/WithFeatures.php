@@ -4,6 +4,7 @@ namespace Sancherie\Feature\Helpers;
 
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Sancherie\Feature\Models\Feature;
 
 /**
@@ -44,7 +45,10 @@ trait WithFeatures
             ->mapWithKeys(fn (Feature $feature) => [$feature->getKey() => ['enabled' => $feature->direct_enabled]])
             ->replace(
                 Feature::resolveMany($features)
-                    ->mapWithKeys(fn (Feature $feature) => [$feature->getKey() => ['enabled' => true]])
+                    ->mapWithKeys(fn (Feature $feature) => [$feature->getKey() => [
+                        'uuid' => Str::uuid(),
+                        'enabled' => true,
+                    ]])
             )->all();
 
         $this->directFeatures()->sync($directFeatures);
@@ -64,6 +68,7 @@ trait WithFeatures
             ->replace(
                 Feature::resolveMany($features)
                     ->mapWithKeys(fn (Feature $feature) => [$feature->getKey() => [
+                        'uuid' => Str::uuid(),
                         'enabled' => true,
                         'claimed_at' => now(),
                     ]])

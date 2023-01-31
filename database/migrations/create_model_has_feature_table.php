@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('model_has_feature', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
 
             $table->foreignUuid('feature_id')->constrained('features');
             $table->uuidMorphs('featurable');

@@ -30,6 +30,24 @@ trait WithFeatures
             'feature_id',
             $this->incrementing ? 'uuid' : null,
             'id'
+        )->withPivot(['uuid as pivot_uuid', 'enabled as direct_enabled']);
+    }
+
+    /**
+     * Relation to the direct features.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
+     */
+    public function claimedFeatures(): MorphToMany
+    {
+        return $this->morphToMany(
+            Feature::class,
+            'featurable',
+            'model_has_feature',
+            'featurable_id',
+            'feature_id',
+            $this->incrementing ? 'uuid' : null,
+            'id'
         )->withPivot(['enabled as direct_enabled']);
     }
 

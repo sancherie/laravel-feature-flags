@@ -12,7 +12,7 @@ use Sancherie\Feature\Contracts\Featurable;
  * The model representing pivot between featurable and features.
  *
  * @property int $id
- * @property int $uuid
+ * @property string $uuid
  * @property string $feature_id
  * @property string $featurable_type
  * @property string $featurable_id
@@ -23,6 +23,10 @@ use Sancherie\Feature\Contracts\Featurable;
 class ModelHasFeature extends Model
 {
     use AsPivot;
+
+    protected $primaryKey = 'uuid';
+
+    public $incrementing = false;
 
     /**
      * @inheritdoc
@@ -60,6 +64,11 @@ class ModelHasFeature extends Model
      */
     public function featurable(): MorphTo
     {
-        return $this->morphTo();
+        return $this->morphTo(
+            'featurable',
+            null,
+            null,
+            'uuid',
+        );
     }
 }

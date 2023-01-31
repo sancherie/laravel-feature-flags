@@ -10,6 +10,8 @@ use ReflectionFunction;
 use ReflectionNamedType;
 use Sancherie\Feature\Contracts\Featurable;
 use Sancherie\Feature\Models\Feature;
+use Sancherie\Feature\Models\FeatureClaim;
+use function _PHPStan_4dd92cd93\RingCentral\Psr7\str;
 
 /**
  * The repository charged of managing feature flags.
@@ -139,13 +141,15 @@ class FeaturesRepository
      *
      * @param Featurable|null $featurable
      * @return Collection<string>
+     * @throws ReflectionException
      */
     public function getEnabledFeatures(?Featurable $featurable = null): Collection
     {
-        return $this->getGloballyEnabledFeatures()
-            ->merge($this->getSpecificallyEnabledFeatures($featurable))
-            ->merge($this->getProgrammaticallyEnabledFeatures($featurable))
-            ->unique();
+        return $this->getProgrammaticFeatures($featurable)
+            ->replace($this->getFeatureClaims($featurable))
+            ->replace($this->getGlobalFeatures())
+            ->filter(fn (?bool $value) => $value === true)
+            ->keys();
     }
 
     /**
@@ -156,7 +160,9 @@ class FeaturesRepository
     public function getGlobalFeatures(): Collection
     {
         if (is_null($this->databaseFeaturesCache)) {
-            $this->databaseFeaturesCache = Feature::query()->pluck('enabled', 'name');
+            $this->databaseFeaturesCache = Feature::query()
+                ->pluck('enabled', 'name')
+                ->filter(fn (?bool $enabled) => !is_null($enabled));
         }
 
         return $this->databaseFeaturesCache;
@@ -169,22 +175,57 @@ class FeaturesRepository
      */
     public function getGloballyEnabledFeatures(): Collection
     {
-        return $this->getGlobalFeatures()->filter(fn ($v) => boolval($v))->keys();
+        return $this->getGlobalFeatures()->filter(fn (bool $enabled) => $enabled === true)->keys();
     }
 
     /**
-     * Return all specifically enabled feature for the given featurable.
+     * Return all feature claims related to the subject.
      *
      * @param Featurable|null $featurable
      * @return Collection<string>
      */
-    public function getSpecificallyEnabledFeatures(?Featurable $featurable = null): Collection
+    public function getFeatureClaims(?Featurable $featurable = null): Collection
     {
         if (is_null($featurable)) {
             return Collection::empty();
         }
 
-        return $featurable->getFeatures()->filter(fn ($v) => boolval($v))->keys();
+        return $featurable
+            ->getFeatureClaims()
+            ->loadMissing('feature')
+            ->pluck('enabled', 'feature.name')
+            ->filter(fn (?bool $enabled) => !is_null($enabled));
+    }
+
+    /**
+     * Return all feature claims enabled for the given subject.
+     *
+     * @param Featurable|null $featurable
+     * @return Collection<string>
+     */
+    public function getEnabledFeatureClaims(?Featurable $featurable = null): Collection
+    {
+        if (is_null($featurable)) {
+            return Collection::empty();
+        }
+
+        return $this->getFeatureClaims($featurable)->filter(fn (bool $enabled) => $enabled === true)->keys();
+    }
+
+    /**
+     * Return all the declared programmatic features.
+     *
+     * @param Featurable|null $featurable
+     * @return Collection
+     * @throws ReflectionException
+     */
+    public function getProgrammaticFeatures(?Featurable $featurable = null): Collection
+    {
+        return Collection::make($this->features)
+            ->keys()
+            ->mapWithKeys(fn (string $feature) => [
+                $feature => $this->isProgrammaticallyEnabled($feature, $featurable),
+            ]);
     }
 
     /**
@@ -192,12 +233,11 @@ class FeaturesRepository
      *
      * @param Featurable|null $featurable
      * @return Collection
+     * @throws ReflectionException
      */
     public function getProgrammaticallyEnabledFeatures(?Featurable $featurable = null): Collection
     {
-        return Collection::make($this->features)
-            ->keys()
-            ->filter(fn (string $feature) => $this->isProgrammaticallyEnabled($feature, $featurable));
+        return $this->getProgrammaticFeatures($featurable)->filter(fn (bool $enabled) => $enabled === true)->keys();
     }
 
     /**
@@ -247,7 +287,9 @@ class FeaturesRepository
             return null;
         }
 
-        $features = $featurable->getFeatures();
+        $features = $featurable->getFeatureClaims()
+            ->loadMissing('feature')
+            ->pluck('enabled', 'feature.name');
 
         if ($features->has($feature)) {
             $result = $features[$feature];

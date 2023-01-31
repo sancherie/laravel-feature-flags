@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Collection as ModelCollection;
 use Illuminate\Support\Collection;
 use Sancherie\Feature\Contracts\Featurable;
 use Sancherie\Feature\Models\Feature;
+use Sancherie\Feature\Models\FeatureClaim;
 
 /**
  * The repository charged of managing feature flag claims.
@@ -43,12 +44,13 @@ class FeatureClaimsRepository
     {
         if (is_null($this->databaseFeaturesCache)) {
             $this->databaseFeaturesCache = Feature::query()
-                ->whereNotNull('max_claims')
-                ->withCount('claimedPivots')
+                ->where('claimable', true)
+                ->withCount('claims')
                 ->get()
                 ->filter(function (Feature $feature) {
                     return is_null($feature->enabled)
-                        && $feature->max_claims > $feature->claimed_pivots_count;
+                        && $feature->claimable
+                        && (is_null($feature->max_claims) || $feature->max_claims > $feature->claims_count);
                 })
                 ->keyBy('name');
         }
@@ -58,10 +60,33 @@ class FeatureClaimsRepository
         } else {
             $claimable = $this->databaseFeaturesCache->whereNotIn(
                 'name',
-                app(FeaturesRepository::class)->getSpecificallyEnabledFeatures($subject),
+                app(FeaturesRepository::class)->getEnabledFeatureClaims($subject),
             );
         }
 
         return $claimable;
+    }
+
+    /**
+     * Return whether the featurable subject has claimed the given feature.
+     *
+     * @param $feature
+     * @param Featurable $subject
+     * @return bool
+     */
+    public function hasClaimed($feature, Featurable $subject): bool
+    {
+        if ($feature instanceof Feature) {
+            $feature = $feature->name;
+        }
+
+        return $subject->getFeatureClaims()
+            ->loadMissing('feature')
+            ->contains(fn (FeatureClaim $claim) => $claim->feature->name === $feature);
+    }
+
+    public function forgetCache(): void
+    {
+        $this->databaseFeaturesCache = null;
     }
 }

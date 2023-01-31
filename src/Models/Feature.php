@@ -15,16 +15,16 @@ use Illuminate\Support\Str;
  * @property string $name
  * @property bool $enabled
  * @property bool $direct_enabled
+ * @property bool $claimable
  * @property int $max_claims
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon $deleted_at
  *
- * @property-read int $claimed_pivots_count
+ * @property-read int $claims_count
  *
  * @property-read ModelCollection $users
- * @property-read ModelCollection<ModelHasFeature> $pivots
- * @property-read ModelCollection<ModelHasFeature> $claimedPivots
+ * @property-read ModelCollection<FeatureClaim> $claim
  */
 class Feature extends Model
 {
@@ -36,9 +36,15 @@ class Feature extends Model
     /**
      * @inheritdoc
      */
+    public $keyType = 'string';
+
+    /**
+     * @inheritdoc
+     */
     protected $fillable = [
         'name',
         'enabled',
+        'claimable',
         'max_claims',
     ];
 
@@ -56,6 +62,7 @@ class Feature extends Model
      */
     protected $casts = [
         'enabled' => 'boolean',
+        'claimable' => 'boolean',
     ];
 
     /**
@@ -93,18 +100,8 @@ class Feature extends Model
      *
      * @return HasMany
      */
-    public function pivots(): HasMany
+    public function claims(): HasMany
     {
-        return $this->hasMany(ModelHasFeature::class);
-    }
-
-    /**
-     * The relation to the pivots that have been claimed.
-     *
-     * @return HasMany
-     */
-    public function claimedPivots(): HasMany
-    {
-        return $this->pivots()->whereNotNull('claimed_at');
+        return $this->hasMany(FeatureClaim::class)->whereNotNull('claimed_at');
     }
 }

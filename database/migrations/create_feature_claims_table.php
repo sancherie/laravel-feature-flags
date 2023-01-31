@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('model_has_feature', function (Blueprint $table) {
+        Schema::create('feature_claims', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
 
@@ -16,6 +16,7 @@ return new class extends Migration
             $table->uuidMorphs('featurable');
             $table->boolean('enabled')->nullable();
             $table->timestamp('claimed_at')->nullable();
+            $table->timestamps();
 
             $table->unique([
                 'feature_id',
@@ -27,6 +28,6 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('model_has_feature');
+        Schema::dropIfExists('feature_claims');
     }
 };

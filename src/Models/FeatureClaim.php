@@ -3,8 +3,10 @@
 namespace Sancherie\Feature\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Concerns\AsPivot;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Sancherie\Feature\Contracts\Featurable;
 
@@ -16,14 +18,14 @@ use Sancherie\Feature\Contracts\Featurable;
  * @property string $feature_id
  * @property string $featurable_type
  * @property string $featurable_id
- * @property string $enabled
+ * @property bool|null $enabled
+ * @property Carbon $claimed_at
  *
+ * @property Feature $feature
  * @property Featurable $featurable
  */
-class ModelHasFeature extends Model
+class FeatureClaim extends Model
 {
-    use AsPivot;
-
     protected $primaryKey = 'uuid';
 
     public $incrementing = false;
@@ -37,6 +39,14 @@ class ModelHasFeature extends Model
         'featurable_type',
         'featurable_id',
         'enabled',
+        'claimed_at'
+    ];
+
+    /**
+     * @inheritdoc
+     */
+    protected $dates = [
+        'claimed_at',
     ];
 
     /**
@@ -55,6 +65,16 @@ class ModelHasFeature extends Model
                 $feature->uuid = (string) Str::uuid();
             }
         });
+    }
+
+    /**
+     * The relation to the feature.
+     *
+     * @return BelongsTo
+     */
+    public function feature(): BelongsTo
+    {
+        return $this->belongsTo(Feature::class, 'feature_id', 'id');
     }
 
     /**

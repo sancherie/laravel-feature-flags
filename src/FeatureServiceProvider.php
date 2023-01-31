@@ -24,8 +24,7 @@ class FeatureServiceProvider extends PackageServiceProvider
             ->hasCommand(DisableFeature::class)
             ->hasCommand(RevokeFeature::class)
             ->hasMigration('create_features_table')
-            ->hasMigration('create_model_has_feature_table')
-            ->hasMigration('alter_features_table_add_max_claims');
+            ->hasMigration('create_feature_claims_table');
 
         if ($this->app->runningInConsole()) {
             $filePath = $this->package->basePath(

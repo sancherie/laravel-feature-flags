@@ -32,7 +32,7 @@ class TestCase extends Orchestra
         $migration->up();
         $migration = include __DIR__.'/../database/migrations/create_features_table.php';
         $migration->up();
-        $migration = include __DIR__.'/../database/migrations/create_model_has_feature_table.php';
+        $migration = include __DIR__ . '/../database/migrations/create_feature_claims_table.php';
         $migration->up();
     }
 }

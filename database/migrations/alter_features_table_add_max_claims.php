@@ -13,6 +13,8 @@ return new class extends Migration
         Schema::table('model_has_feature', function (Blueprint $table) {
             $table->uuid('uuid')->after('id')->unique()->nullable();
             $table->timestamp('claimed_at')->after('enabled')->nullable();
+            $table->timestamp('created_at')->nullable()->after('claimed_at');
+            $table->timestamp('updated_at')->nullable()->after('created_at');
         });
 
         foreach (DB::table('model_has_feature')->whereNull('uuid')->cursor() as $item) {
@@ -26,12 +28,17 @@ return new class extends Migration
         });
 
         Schema::table('features', function (Blueprint $table) {
-            $table->unsignedInteger('max_claims')->after('enabled')->nullable();
+            $table->boolean('claimable')->after('enabled')->default(false);
+            $table->unsignedInteger('max_claims')->after('claimable')->nullable();
         });
+
+        Schema::rename('model_has_feature', 'feature_claims');
     }
 
     public function down()
     {
+        Schema::rename('feature_claims', 'model_has_feature');
+
         Schema::table('features', function (Blueprint $table) {
             $table->dropColumn('max_claims');
         });

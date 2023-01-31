@@ -3,6 +3,7 @@
 use Sancherie\Feature\Database\Factories\UserFactory;
 use Sancherie\Feature\FeatureService;
 use Sancherie\Feature\Models\Feature;
+use Sancherie\Feature\Repositories\FeatureClaimsRepository;
 
 it('should return not claimable features', function () {
     $service = app(FeatureService::class);
@@ -16,26 +17,34 @@ it('should return not claimable features', function () {
         ->toBeEmpty();
 });
 
-it('should return two claimable features', function () {
+it('should return three claimable features', function () {
     $service = app(FeatureService::class);
-    Feature::query()->create(['name' => 'client-v2', 'max_claims' => 1]);
-    Feature::query()->create(['name' => 'client-v3', 'max_claims' => 1500]);
+    Feature::query()->create(['name' => 'client-v2', 'claimable' => true, 'max_claims' => 1]);
+    Feature::query()->create(['name' => 'client-v3', 'claimable' => true, 'max_claims' => 1500]);
+    Feature::query()->create(['name' => 'client-v4', 'claimable' => true]);
 
     expect($service->claimable())
         ->toBeCollection()
-        ->toHaveCount(2);
+        ->toHaveCount(3);
 });
 
 it('should return only one claimable feature', function () {
     $users = app(UserFactory::class)->count(3)->create();
+    /** @var FeatureService $service */
     $service = app(FeatureService::class);
-    Feature::query()->create(['name' => 'client-v2', 'max_claims' => 2]);
-    Feature::query()->create(['name' => 'client-v3', 'max_claims' => 1500]);
+    Feature::query()->create(['name' => 'client-v2', 'claimable' => true, 'max_claims' => 2]);
+    Feature::query()->create(['name' => 'client-v3', 'claimable' => true, 'max_claims' => 1500]);
 
     $users[0]->claimFeature('client-v2');
-    $users[1]->claimFeature('client-v2');
-    $users[2]->giveFeature('client-v2');
+    $users[1]->giveFeature('client-v2');
 
+    expect($service->getClaimableFeatures())
+        ->toBeCollection()
+        ->toHaveCount(2);
+
+    $users[2]->claimFeature('client-v2');
+
+    app(FeatureClaimsRepository::class)->forgetCache();
     expect($service->getClaimableFeatures())
         ->toBeCollection()
         ->toHaveCount(1);
@@ -73,7 +82,7 @@ it('should not return claimable feature because the feature is globally enabled'
 
 it('should return true because the feature the max claims is big', function () {
     $service = app(FeatureService::class);
-    Feature::query()->create(['name' => 'client-v2', 'max_claims' => 2]);
+    Feature::query()->create(['name' => 'client-v2', 'claimable' => true, 'max_claims' => 2]);
 
     expect($service->isClaimable('client-v2'))->toBeTrue();
 });
@@ -99,7 +108,7 @@ it('should return false because the max claims is reached', function () {
 it('should return true because feature is given but not claimed', function () {
     $user = app(UserFactory::class)->create();
     $service = app(FeatureService::class);
-    Feature::query()->create(['name' => 'client-v2', 'max_claims' => 1]);
+    Feature::query()->create(['name' => 'client-v2', 'claimable' => true, 'max_claims' => 1]);
 
     $user->giveFeature('client-v2');
 

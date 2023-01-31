@@ -1,5 +1,6 @@
 <?php
 
+use Sancherie\Feature\Facades\Feature;
 use Sancherie\Feature\Repositories\FeaturesRepository;
 use Sancherie\Feature\Tests\Models\User;
 
@@ -74,7 +75,7 @@ it('returns the enabled features for a subject', function () {
 it('returns no specifically enabled features if no subject given', function () {
     $service = new FeaturesRepository();
 
-    expect($service->getSpecificallyEnabledFeatures())->toBeEmpty();
+    expect($service->getEnabledFeatureClaims())->toBeEmpty();
 });
 
 it('returns only one feature instance when its given multiple times', function () {
@@ -156,4 +157,21 @@ it('throws an error because the wanted argument is a builtin', function () {
         Exception::class,
         'Feature flag callback argument should be an instance of Featurable.'
     );
+});
+
+it('returns no specific feature because the feature has been globally disabled', function () {
+    $service = new FeaturesRepository();
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $user->giveFeature('client-v2');
+
+    $result = $service->getEnabledFeatures($user)->all();
+    expect($result)->toBeArray()->toBe(['client-v2']);
+
+    Feature::disable('client-v2');
+
+    $service->forgetCache();
+    $result = $service->getEnabledFeatures($user)->all();
+    expect($result)->toBeArray()->toBeEmpty();
 });

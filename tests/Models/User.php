@@ -24,4 +24,11 @@ class User extends \Illuminate\Foundation\Auth\User implements Featurable
      * @var bool
      */
     public $incrementing = false;
+
+    /**
+     * The type of the primary key.
+     *
+     * @var bool
+     */
+    public $keyType = 'string';
 }

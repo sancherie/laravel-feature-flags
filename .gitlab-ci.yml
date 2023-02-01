@@ -1,0 +1,59 @@
+image: registry.gitlab.plussimple.ovh/image/ci-env:debian-utf8-nodev12-php74
+
+variables:
+  GIT_SUBMODULE_STRATEGY: normal
+
+cache:
+  untracked: true
+  key: "$CI_BUILD_REF_SLUG"
+  paths:
+    - vendor/
+
+stages:
+  - build
+  - qa
+  - deploy
+
+before_script:
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+  - mkdir -p ~/.ssh
+  - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+  - find . -type d -perm 777 -exec chmod 755 {} \;
+  - find . -type f -perm 777 -exec chmod 644 {} \;
+
+build: &build_def
+  stage: build
+  script:
+    - echo "Building the APP"
+    - composer install --no-progress
+    - composer dumpautoload -o
+    - echo "{\"date\":\"$(date --iso-8601=seconds)\", \"job\":\"$CI_JOB_ID\", \"commit\":\"$CI_COMMIT_SHA\", \"ref\":\"$CI_COMMIT_REF_NAME\"}" > .build
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - vendor/
+      - .build
+qa:phpunit:
+  stage: qa
+  script:
+    - apt-get update -qq && apt-get install -y -qq php7.4-sqlite
+    - vendor/bin/pest
+  allow_failure: false
+  coverage: '/^\s*Lines:\s*(\d+\.\d+)\%/'
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.cobertura.xml
+    paths:
+      - storage/logs
+
+deploy_composer:
+  only:
+    - tags
+  stage: deploy
+  script:
+    - 'curl --header "Job-Token: ${CI_JOB_TOKEN}" --data tag=${CI_COMMIT_TAG} "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/composer"'

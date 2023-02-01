@@ -3,11 +3,14 @@
 namespace Sancherie\Feature;
 
 use Exception;
+use Illuminate\Database\Eloquent\Collection as ModelCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Traits\Macroable;
-use ReflectionFunction;
+use ReflectionException;
 use Sancherie\Feature\Contracts\Featurable;
 use Sancherie\Feature\Models\Feature;
+use Sancherie\Feature\Repositories\FeatureClaimsRepository;
+use Sancherie\Feature\Repositories\FeaturesRepository;
 
 /**
  * The service charged of managing feature flags.
@@ -17,18 +20,30 @@ class FeatureService
     use Macroable;
 
     /**
-     * The array of declared features.
+     * The repository managing features.
      *
-     * @var array<string, \Closure|bool>
+     * @var FeaturesRepository
      */
-    private array $features = [];
+    private FeaturesRepository $featuresRepository;
 
     /**
-     * The cache array of declared features in database.
+     * The repository managing feature claims.
      *
-     * @var Collection<string>|null
+     * @var FeatureClaimsRepository
      */
-    private ?Collection $databaseFeaturesCache = null;
+    private FeatureClaimsRepository $featureClaimsRepository;
+
+    /**
+     * @param FeaturesRepository $featuresRepository
+     * @param FeatureClaimsRepository $featureClaimsRepository
+     */
+    public function __construct(
+        FeaturesRepository $featuresRepository,
+        FeatureClaimsRepository $featureClaimsRepository
+    ) {
+        $this->featuresRepository = $featuresRepository;
+        $this->featureClaimsRepository = $featureClaimsRepository;
+    }
 
     /**
      * Register new programmatic feature(s) and its(their) rule to be enabled.
@@ -36,83 +51,47 @@ class FeatureService
      * @param string|array $feature
      * @param bool|callable|null $enabled
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function declare($feature, $enabled = null): void
     {
-        if (empty($feature)) {
-            return;
-        }
-
-        if (is_array($feature)) {
-            foreach ($feature as $key => $value) {
-                if (is_string($key)) {
-                    $this->declare($key, $value);
-                } else {
-                    $this->declare($value);
-                }
-            }
-
-            return;
-        }
-
-        if (func_num_args() === 1) {
-            $enabled = true;
-        }
-
-        if (is_bool($enabled) || is_callable($enabled)) {
-            $this->features[$feature] = $enabled;
-        } else {
-            throw new Exception('Invalid rule type, it should be either a boolean or a closure');
-        }
+        $this->featuresRepository->declare(...func_get_args());
     }
 
     /**
      * Enable the given feature. If a featurable is given, the feature is enabled only for this subject.
      *
      * @param string $feature
-     * @param \Sancherie\Feature\Contracts\Featurable|null $for
+     * @param Featurable|null $for
      * @return void
      */
     public function enable(string $feature, ?Featurable $for = null): void
     {
-        if (is_null($for)) {
-            Feature::query()->updateOrCreate(['name' => $feature], ['enabled' => true]);
-        } else {
-            $for->giveFeature($feature);
-        }
+        $this->featuresRepository->enable($feature, $for);
     }
 
     /**
      * Revoke the given feature. If a featurable is given, the feature is revoked for the subject.
      *
      * @param string $feature
-     * @param \Sancherie\Feature\Contracts\Featurable|null $for
+     * @param Featurable|null $for
      * @return void
      */
     public function revoke(string $feature, ?Featurable $for = null): void
     {
-        if (is_null($for)) {
-            Feature::query()->updateOrCreate(['name' => $feature], ['enabled' => null]);
-        } else {
-            $for->revokeFeature($feature);
-        }
+        $this->featuresRepository->revoke($feature, $for);
     }
 
     /**
      * Disable the given feature. If a featurable is given, the feature is disabled for the subject.
      *
      * @param string $feature
-     * @param \Sancherie\Feature\Contracts\Featurable|null $for
+     * @param Featurable|null $for
      * @return void
      */
     public function disable(string $feature, ?Featurable $for = null): void
     {
-        if (is_null($for)) {
-            Feature::query()->updateOrCreate(['name' => $feature], ['enabled' => false]);
-        } else {
-            $for->disableFeature($feature);
-        }
+        $this->featuresRepository->disable($feature, $for);
     }
 
     /**
@@ -120,8 +99,8 @@ class FeatureService
      * otherwise it returns the list of enabled features. A featurable object can be given.
      *
      * @param string|Featurable|null $feature
-     * @return bool|\Illuminate\Database\Eloquent\Collection<string>
-     * @throws \ReflectionException
+     * @return bool|Collection<string>
+     * @throws ReflectionException
      */
     public function enabled($feature = null, ?Featurable $featurable = null)
     {
@@ -135,6 +114,19 @@ class FeatureService
     }
 
     /**
+     * Check if the current feature is enabled.
+     *
+     * @param string $feature
+     * @param Featurable|null $featurable
+     * @return bool
+     * @throws ReflectionException
+     */
+    public function isEnabled(string $feature, ?Featurable $featurable = null): bool
+    {
+        return $this->featuresRepository->isEnabled($feature, $featurable);
+    }
+
+    /**
      * Return all the enabled features for the given featurable.
      *
      * @param Featurable|null $featurable
@@ -142,186 +134,48 @@ class FeatureService
      */
     public function getEnabledFeatures(?Featurable $featurable = null): Collection
     {
-        return $this->getGloballyEnabledFeatures()
-            ->merge($this->getSpecificallyEnabledFeatures($featurable))
-            ->merge($this->getProgrammaticallyEnabledFeatures($featurable))
-            ->unique();
+        return $this->featuresRepository->getEnabledFeatures($featurable);
     }
 
     /**
-     * Return all the features that are declared in database.
+     * If a feature name (string) is given, check whether the feature is claimable or not,
+     * otherwise it returns the list of claimable features. A featurable object can be given.
      *
-     * @return Collection<string>
-     */
-    public function getGlobalFeatures(): Collection
-    {
-        if (is_null($this->databaseFeaturesCache)) {
-            $this->databaseFeaturesCache = Feature::query()->pluck('enabled', 'name');
-        }
-
-        return $this->databaseFeaturesCache;
-    }
-
-    /**
-     * Return all the features that are globally enabled in database.
-     *
-     * @return Collection<string>
-     */
-    public function getGloballyEnabledFeatures(): Collection
-    {
-        return $this->getGlobalFeatures()->filter(fn ($v) => boolval($v))->keys();
-    }
-
-    /**
-     * Return all specifically enabled feature for the given featurable.
-     *
+     * @param string|Featurable|Feature|null $feature
      * @param Featurable|null $featurable
-     * @return Collection<string>
+     * @return bool|ModelCollection
      */
-    public function getSpecificallyEnabledFeatures(?Featurable $featurable = null): Collection
+    public function claimable($feature = null, ?Featurable $featurable = null)
     {
-        if (is_null($featurable)) {
-            return Collection::empty();
-        }
-
-        return $featurable->getFeatures()->filter(fn ($v) => boolval($v))->keys();
-    }
-
-    /**
-     * Return all the features that are programmatically enabled for the given featurable.
-     *
-     * @param \Sancherie\Feature\Contracts\Featurable|null $featurable
-     * @return \Illuminate\Support\Collection
-     */
-    public function getProgrammaticallyEnabledFeatures(?Featurable $featurable = null): Collection
-    {
-        return Collection::make($this->features)
-            ->keys()
-            ->filter(fn (string $feature) => $this->isProgrammaticallyEnabled($feature, $featurable));
-    }
-
-    /**
-     * Check if the current feature is enabled.
-     *
-     * @param string $feature
-     * @param \Sancherie\Feature\Contracts\Featurable|null $featurable
-     * @return bool
-     * @throws \ReflectionException
-     */
-    public function isEnabled(string $feature, ?Featurable $featurable = null): bool
-    {
-        return $this->getGlobalFeatureStatus($feature)
-            ?? $this->getSpecificFeatureStatus($feature, $featurable)
-            ?? $this->isProgrammaticallyEnabled($feature, $featurable);
-    }
-
-    /**
-     * Check if the given feature is globally enabled in database.
-     *
-     * @param string $feature
-     * @return bool|null
-     */
-    public function getGlobalFeatureStatus(string $feature): ?bool
-    {
-        $globalFeatures = $this->getGlobalFeatures();
-
-        if ($globalFeatures->has($feature)) {
-            $result = $globalFeatures[$feature];
+        if (is_string($feature) || $feature instanceof Feature) {
+            $result = $this->isClaimable($feature, $featurable);
         } else {
-            $result = null;
+            $result = $this->getClaimableFeatures($feature);
         }
 
         return $result;
     }
 
     /**
-     * Check if the given feature is specifically enabled for the featurable.
+     * Return whether the given feature is claimable or not.
      *
-     * @param string $feature
-     * @param \Sancherie\Feature\Contracts\Featurable|null $featurable
-     * @return bool|null
-     */
-    public function getSpecificFeatureStatus(string $feature, ?Featurable $featurable): ?bool
-    {
-        if (is_null($featurable)) {
-            return null;
-        }
-
-        $features = $featurable->getFeatures();
-
-        if ($features->has($feature)) {
-            $result = $features[$feature];
-        } else {
-            $result = null;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Check if the given feature is programmatically enabled.
-     *
-     * @param string $feature
-     * @param \Sancherie\Feature\Contracts\Featurable|null $featurable
+     * @param Feature|string $feature
+     * @param Featurable|null $subject
      * @return bool
-     * @throws \ReflectionException
      */
-    public function isProgrammaticallyEnabled(string $feature, ?Featurable $featurable = null): bool
+    public function isClaimable($feature, ?Featurable $subject = null): bool
     {
-        $rule = $this->features[$feature] ?? false;
-
-        if (is_bool($rule)) {
-            return $rule;
-        }
-
-        $argument = $this->getCallbackArgumentData($rule);
-
-        if (! $argument['optional'] && ! ($featurable instanceof $argument['class'])) {
-            return false;
-        }
-
-        return $rule($featurable);
+        return $this->featureClaimsRepository->isClaimable($feature, $subject);
     }
 
     /**
-     * Return data about the first callback argument
+     * Return all the features that are claimable for the given subject.
      *
-     * @param \Closure $callback
-     * @return array
-     * @throws \ReflectionException
-     * @throws \Exception
+     * @param Featurable|null $subject
+     * @return ModelCollection
      */
-    private function getCallbackArgumentData(\Closure $callback): array
+    public function getClaimableFeatures(?Featurable $subject = null): ModelCollection
     {
-        $parameters = (new ReflectionFunction($callback))->getParameters();
-
-        if (empty($parameters)) {
-            return [
-                'optional' => true,
-            ];
-        } elseif (count($parameters) > 1) {
-            throw new Exception('Feature flag callback can receive a maximum of 1 argument.');
-        }
-
-        $parameter = $parameters[0];
-
-        if (is_null($type = $parameter->getType())) {
-            throw new Exception('Feature flag callback argument should be typed.');
-        }
-
-        if ($type->isBuiltin()) {
-            throw new Exception('Feature flag callback argument should be an instance of Featurable.');
-        }
-
-        return [
-            'name' => $parameter->getName(),
-            'class' => $type instanceof \ReflectionNamedType ? $type->getName() : null,
-            'optional' => $type->allowsNull(),
-        ];
-    }
-
-    public function forgetCache(): void
-    {
-        $this->databaseFeaturesCache = null;
+        return $this->featureClaimsRepository->getClaimableFeatures($subject);
     }
 }

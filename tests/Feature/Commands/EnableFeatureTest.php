@@ -3,8 +3,9 @@
 use function Pest\Laravel\artisan;
 
 use Sancherie\Feature\Contracts\Featurable;
+
 use Sancherie\Feature\Database\Factories\UserFactory;
-use Sancherie\Feature\Facades\Feature;
+use Sancherie\Feature\Repositories\FeaturesRepository;
 use Sancherie\Feature\Tests\Models\NotFeaturableUser;
 use Sancherie\Feature\Tests\Models\User;
 use Symfony\Component\Console\Command\Command;
@@ -18,7 +19,7 @@ it('globally enables a feature with force', function () {
     $command->assertSuccessful();
     $command->expectsOutput('The feature [client-v2] has been successfully enabled globally !');
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeTrue();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeTrue();
 });
 
 it('globally enables a feature with confirmation', function () {
@@ -33,7 +34,7 @@ it('globally enables a feature with confirmation', function () {
     );
     $command->expectsOutput('The feature [client-v2] has been successfully enabled globally !');
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeTrue();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeTrue();
 });
 
 it('doesnt globally enable a feature without confirmation', function () {
@@ -47,7 +48,7 @@ it('doesnt globally enable a feature without confirmation', function () {
     );
     $command->expectsOutput('Action canceled');
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull();
 });
 
 it('specifically enables a feature with force', function () {
@@ -67,8 +68,8 @@ it('specifically enables a feature with force', function () {
         $user->getKey(),
     ));
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull()
-        ->and(Feature::getSpecificFeatureStatus('client-v2', $user))->toBeTrue();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull()
+        ->and(app(FeaturesRepository::class)->getSpecificFeatureStatus('client-v2', $user))->toBeTrue();
 });
 
 it('specifically enables a feature with confirmation', function () {
@@ -93,8 +94,8 @@ it('specifically enables a feature with confirmation', function () {
         $user->getKey(),
     ));
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull()
-        ->and(Feature::getSpecificFeatureStatus('client-v2', $user))->toBeTrue();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull()
+        ->and(app(FeaturesRepository::class)->getSpecificFeatureStatus('client-v2', $user))->toBeTrue();
 });
 
 it('doesnt specifically enable a feature without confirmation', function () {
@@ -115,8 +116,8 @@ it('doesnt specifically enable a feature without confirmation', function () {
     ), );
     $command->expectsOutput('Action canceled');
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull()
-        ->and(Feature::getSpecificFeatureStatus('client-v2', $user))->toBeNull();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull()
+        ->and(app(FeaturesRepository::class)->getSpecificFeatureStatus('client-v2', $user))->toBeNull();
 });
 
 it('specifically enables a feature by email', function () {
@@ -137,8 +138,8 @@ it('specifically enables a feature by email', function () {
         $user->email,
     ));
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull()
-        ->and(Feature::getSpecificFeatureStatus('client-v2', $user))->toBeTrue();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull()
+        ->and(app(FeaturesRepository::class)->getSpecificFeatureStatus('client-v2', $user))->toBeTrue();
 });
 
 it('asks the feature name if not given as an option', function () {
@@ -159,8 +160,8 @@ it('asks the feature name if not given as an option', function () {
         $user->email,
     ));
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull()
-        ->and(Feature::getSpecificFeatureStatus('client-v2', $user))->toBeTrue();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull()
+        ->and(app(FeaturesRepository::class)->getSpecificFeatureStatus('client-v2', $user))->toBeTrue();
 });
 
 it('throws an error when no feature name if given', function () {
@@ -170,7 +171,7 @@ it('throws an error when no feature name if given', function () {
     $command->expectsQuestion('Which feature do you want to enable ?', '');
     $command->expectsOutput('A feature name should be given.');
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull();
 });
 
 it('throws an error when the subject class doesnt exist', function () {
@@ -182,7 +183,7 @@ it('throws an error when the subject class doesnt exist', function () {
     $command->assertExitCode(Command::INVALID);
     $command->expectsOutput('The subject class [NoClass] does not exist.');
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull();
 });
 
 it('throws an error when no identifier option is given', function () {
@@ -196,7 +197,7 @@ it('throws an error when no identifier option is given', function () {
         'You should give any of these option to identify model subject you want to enable the feature: --id, --uuid or --email.'
     );
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull();
 });
 
 it('throws an error when no model was found', function () {
@@ -213,7 +214,7 @@ it('throws an error when no model was found', function () {
         -1,
     ));
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull();
 });
 
 it('throws an error when the model is not an instance of featurable', function () {
@@ -234,5 +235,5 @@ it('throws an error when the model is not an instance of featurable', function (
         Featurable::class,
     ));
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeNull();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeNull();
 });

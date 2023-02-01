@@ -13,6 +13,8 @@ return new class extends Migration
 
             $table->string('name', 64);
             $table->boolean('enabled')->nullable();
+            $table->boolean('claimable')->default(false);
+            $table->unsignedInteger('max_claims')->nullable();
 
             $table->timestamps();
         });

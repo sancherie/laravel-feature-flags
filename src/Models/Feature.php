@@ -2,8 +2,10 @@
 
 namespace Sancherie\Feature\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection as ModelCollection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -13,11 +15,16 @@ use Illuminate\Support\Str;
  * @property string $name
  * @property bool $enabled
  * @property bool $direct_enabled
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property \Carbon\Carbon $deleted_at
+ * @property bool $claimable
+ * @property int $max_claims
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon $deleted_at
  *
- * @property-read \Illuminate\Database\Eloquent\Collection $users
+ * @property-read int $claims_count
+ *
+ * @property-read ModelCollection $users
+ * @property-read ModelCollection<FeatureClaim> $claim
  */
 class Feature extends Model
 {
@@ -29,9 +36,16 @@ class Feature extends Model
     /**
      * @inheritdoc
      */
+    public $keyType = 'string';
+
+    /**
+     * @inheritdoc
+     */
     protected $fillable = [
         'name',
         'enabled',
+        'claimable',
+        'max_claims',
     ];
 
     /**
@@ -48,6 +62,7 @@ class Feature extends Model
      */
     protected $casts = [
         'enabled' => 'boolean',
+        'claimable' => 'boolean',
     ];
 
     /**
@@ -78,5 +93,15 @@ class Feature extends Model
                 $feature->{$feature->getKeyName()} = (string) Str::uuid();
             }
         });
+    }
+
+    /**
+     * The relation to the pivots.
+     *
+     * @return HasMany
+     */
+    public function claims(): HasMany
+    {
+        return $this->hasMany(FeatureClaim::class)->whereNotNull('claimed_at');
     }
 }

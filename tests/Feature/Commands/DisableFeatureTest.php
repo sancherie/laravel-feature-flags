@@ -3,7 +3,9 @@
 use function Pest\Laravel\artisan;
 
 use Sancherie\Feature\Database\Factories\UserFactory;
+
 use Sancherie\Feature\Facades\Feature;
+use Sancherie\Feature\Repositories\FeaturesRepository;
 use Sancherie\Feature\Tests\Models\User;
 
 it('globally disables a feature', function () {
@@ -17,7 +19,7 @@ it('globally disables a feature', function () {
     $command->assertSuccessful();
     $command->expectsOutput('The feature [client-v2] has been successfully disabled globally !');
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeFalse();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeFalse();
 });
 
 it('specifically disables a feature', function () {
@@ -39,6 +41,6 @@ it('specifically disables a feature', function () {
         $user->getKey(),
     ));
     $command->run();
-    expect(Feature::getGlobalFeatureStatus('client-v2'))->toBeTrue()
-        ->and(Feature::getSpecificFeatureStatus('client-v2', $user))->toBeFalse();
+    expect(app(FeaturesRepository::class)->getGlobalFeatureStatus('client-v2'))->toBeTrue()
+        ->and(app(FeaturesRepository::class)->getSpecificFeatureStatus('client-v2', $user))->toBeFalse();
 });

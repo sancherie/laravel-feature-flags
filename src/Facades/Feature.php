@@ -6,6 +6,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
 use Sancherie\Feature\Contracts\Featurable;
 use Sancherie\Feature\FeatureService;
+use Sancherie\Feature\Models\Feature as FeatureModel;
 
 /**
  * A facade for the feature service.
@@ -16,15 +17,10 @@ use Sancherie\Feature\FeatureService;
  * @method static void disable(string $feature, ?Featurable $for = null)
  * @method static bool|Collection enabled($feature = null, ?Featurable $featurable = null)
  * @method static Collection getEnabledFeatures(?Featurable $featurable = null)
- * @method static Collection getGloballyEnabledFeatures()
- * @method static Collection getSpecificallyEnabledFeatures(?Featurable $featurable = null)
- * @method static Collection getProgrammaticallyEnabledFeatures(?Featurable $featurable = null)
  * @method static bool isEnabled(string $feature, ?Featurable $featurable = null)
- * @method static bool|null getGlobalFeatureStatus(string $feature)
- * @method static bool|null getSpecificFeatureStatus(string $feature, ?Featurable $featurable)
- * @method static bool isProgrammaticallyEnabled(string $feature, ?Featurable $featurable)
- * @method static void forgetCache()
- * @mixin \Illuminate\Support\Traits\Macroable
+ * @method static bool claimable(Featurable|FeatureModel|string|null $feature, Featurable|null $featurable = null)
+ * @method static bool isClaimable(FeatureModel|string $feature, Featurable|null $featurable = null)
+ * @method static Collection getClaimableFeatures(Featurable|null $featurable = null)
  */
 class Feature extends Facade
 {
